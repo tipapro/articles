@@ -1,32 +1,35 @@
-# Установите количество итераций в этой константе
-$iterations = 40
+# Set the number of iterations in this constant
+$iterations = 4
 
-# Папка для сохранения результатов
+# Directory for saving results
 $outputDir = "benchmarks"
 
-# Имя пакета для тестирования
+# Package name for testing
 $benchmarkPackage = "com.example.benchmark.test"
 
-# Путь к директории с результатами на устройстве
+# Path to the results directory on the device
 $deviceResultsDir = "/storage/emulated/0/Android/media/$benchmarkPackage/additional_test_output"
 
-# Оставить экран включенным
+# Benchmark class to run
+$benchmarkClass = "com.example.benchmark.IdBenchmark"
+
+# Keep the screen on
 & adb shell svc power stayon true
 
-# Создать папку для результатов, если она не существует
+# Create the results directory if it doesn't exist
 if (-not (Test-Path -Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir | Out-Null
 }
 
-# Очистить папку с результатами на устройстве перед циклом
+# Clean the results directory on the device before starting the loop
 Write-Host "Cleaning benchmark result directory on device..."
 & adb shell rm -r $deviceResultsDir
 
-# Остановить все активные Gradle Daemon
+# Stop all active Gradle Daemon processes
 Write-Host "Stopping all Gradle Daemon processes..."
 & .\gradlew.bat --stop
 
-# Найти максимальный номер теста перед началом цикла
+# Find the highest test number before starting the loop
 $maxNum = 0
 $fileFound = $false
 
@@ -47,20 +50,20 @@ if (-not $fileFound) {
 
 $nextNum = $maxNum + 1
 
-# Замер общего времени выполнения скрипта
+# Measure the total execution time of the script
 $scriptStartTime = [System.Diagnostics.Stopwatch]::StartNew()
 
-# Запуск цикла
+# Start the loop
 for ($i = 1; $i -le $iterations; $i++) {
     Write-Host "Running benchmark iteration $i..."
 
-    # Замер времени для текущей итерации
+    # Measure the time for the current iteration
     $iterationStartTime = [System.Diagnostics.Stopwatch]::StartNew()
 
-    # Запустить Gradle тест с использованием Daemon для конкретного класса
+    # Run the Gradle test using the Daemon for the specific class
     $gradleArgs = @(
         ":microbenchmark:connectedReleaseAndroidTest"
-        "-Pandroid.testInstrumentationRunnerArguments.class=com.example.benchmark.IdBenchmark"
+        "-Pandroid.testInstrumentationRunnerArguments.class=$benchmarkClass"
         "--daemon"
         "-q"
     )
@@ -73,15 +76,15 @@ for ($i = 1; $i -le $iterations; $i++) {
         continue
     }
 
-    # Копировать результат с устройства
+    # Pull the result from the device
     Write-Host "Pulling benchmark result from device..."
     & adb pull "$deviceResultsDir/com_example_benchmark_test-benchmarkData.json" "$outputDir/test$nextNum.json"
 
-    # Удалить результаты с устройства
+    # Remove the results from the device
     Write-Host "Removing benchmark result from device..."
     & adb shell rm -r $deviceResultsDir
 
-    # Анализ JSON файла и вывод min, avg, max для каждого бенчмарка
+    # Analyze the JSON file and output min, avg, max for each benchmark
     Write-Host "Analyzing benchmark results..."
     $jsonContent = Get-Content -Path "$outputDir/test$nextNum.json" | ConvertFrom-Json
     foreach ($benchmark in $jsonContent.benchmarks) {
@@ -97,23 +100,23 @@ for ($i = 1; $i -le $iterations; $i++) {
         Write-Host ""
     }
 
-    # Увеличить номер теста
+    # Increment the test number
     $nextNum++
 
-    # Вывести время выполнения текущей итерации
+    # Output the execution time of the current iteration
     $iterationStartTime.Stop()
     $iterationTime = [math]::Round($iterationStartTime.Elapsed.TotalMinutes, 2)
     Write-Host "Iteration $i complete in $iterationTime minutes."
 
-    # Вывести общее время выполнения скрипта
+    # Output the total elapsed time since the script start
     $totalTimeElapsed = [math]::Round($scriptStartTime.Elapsed.TotalMinutes, 2)
     Write-Host "Total time elapsed since script start: $totalTimeElapsed minutes."
 }
 
-# Вернуть экран к стандартному поведению
+# Return the screen to standard behavior
 & adb shell svc power stayon false
 
-# Вывести общее время выполнения скрипта в конце
+# Output the total execution time of the script at the end
 $scriptStartTime.Stop()
 $totalScriptTime = [math]::Round($scriptStartTime.Elapsed.TotalMinutes, 2)
 Write-Host "All iterations complete."
