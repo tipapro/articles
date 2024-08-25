@@ -47,8 +47,8 @@ fun Int.toBase62(): String {
 }
 
 object LocalId {
-    private val prefix = Random(RANDOM_SEED).nextInt(MAX_RANDOM_PREFIX_VALUE).toBase62() +
-            System.currentTimeMillis().and(CURRENT_TIME_MASK).toBase62()
+    private val prefix = System.currentTimeMillis().and(CURRENT_TIME_MASK).toBase62() +
+            Random(RANDOM_SEED).nextInt(MAX_RANDOM_PREFIX_VALUE).toBase62()
     private val counter = AtomicLong(INITIAL_COUNTER_VALUE)
 
     fun newId(): String {
