@@ -21,7 +21,8 @@ private const val CURRENT_TIME_MASK = 0xFFFFFFFFFL
 
 // Initial counter value for ID generation.
 // This is the starting point for the sequential counter used in generating unique IDs,
-// allowing for a predefined starting number.
+// allowing for a predefined starting number. The starting point is 2000L to avoid
+// using small integers that could potentially fall within the Integer cache pool in Java.
 private const val INITIAL_COUNTER_VALUE = 2000L
 
 fun Long.toBase62(): String {
