@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong
 private const val BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 private const val BASE62_LENGTH = BASE62_CHARS.length
 
-// Seed for Random number generation to ensure reproducibility
+// Seed for random number generation to ensure reproducibility in tests (remove for production)
 private const val RANDOM_SEED = 1234L
 
 // Maximum value for generating a random prefix.
