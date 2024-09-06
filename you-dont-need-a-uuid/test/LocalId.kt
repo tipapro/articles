@@ -1,23 +1,25 @@
 package com.example.benchmark.uutils
 
-import java.util.Random
+import java.security.SecureRandom
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
-private const val BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-private const val BASE62_LENGTH = BASE62_CHARS.length
+private const val CHARS = "BJmkQCdLHlPobfKZsiuRqDwtzINTWOYA"
+private const val MASK = 0x1FL
+private const val BASE32_MAX_LENGTH = 13
 
-// Seed for random number generation to ensure reproducibility in tests (remove for production)
-private const val RANDOM_SEED = 1234L
+fun Long.toCompactString(): String {
+    val result = CharArray(BASE32_MAX_LENGTH)
+    var number = this
+    var index = BASE32_MAX_LENGTH - 1
 
-// Maximum value for generating a random prefix.
-// This sets an upper limit on the random value used for prefix creation,
-// ensuring the prefix is within a specific range for consistency.
-private const val MAX_RANDOM_PREFIX_VALUE = 1000000
+    do {
+        result[index--] = CHARS[(number and MASK).toInt()]
+        number = number ushr 5
+    } while (number != 0L)
 
-// Mask for extracting the lower 40 bits of the current time in milliseconds
-// This limits the range of time-related values to 2^40 - 1 (about 34.8 years worth of milliseconds),
-// ensuring the time component of the ID fits within 40 bits.
-private const val CURRENT_TIME_MASK = 0xFFFFFFFFFL
+    return String(result, index + 1, BASE32_MAX_LENGTH - index - 1)
+}
 
 // Initial counter value for ID generation.
 // This is the starting point for the sequential counter used in generating unique IDs,
@@ -25,34 +27,48 @@ private const val CURRENT_TIME_MASK = 0xFFFFFFFFFL
 // using small integers that could potentially fall within the Integer cache pool in Java.
 private const val INITIAL_COUNTER_VALUE = 2000L
 
-fun Long.toBase62(): String {
-    if (this == 0L) return "0"
-    var number = this
-    val result = StringBuilder()
-    while (number > 0) {
-        result.insert(0, BASE62_CHARS[(number % BASE62_LENGTH).toInt()])
-        number /= BASE62_LENGTH
+class LocalId(
+    private val mostSigBits: Long,
+    private val leastSigBits: Long
+) {
+
+    override fun hashCode(): Int {
+        return (mostSigBits xor leastSigBits).hashCode()
     }
-    return result.toString()
-}
 
-fun Int.toBase62(): String {
-    if (this == 0) return "0"
-    var number = this
-    val result = StringBuilder()
-    while (number > 0) {
-        result.insert(0, BASE62_CHARS[(number % BASE62_LENGTH).toInt()])
-        number /= BASE62_LENGTH
+    override fun equals(other: Any?): Boolean {
+        if ((null == other) || (other.javaClass != LocalId::class.java)) return false
+        val id = other as LocalId
+        return (mostSigBits == id.mostSigBits &&
+                leastSigBits == id.leastSigBits)
     }
-    return result.toString()
-}
 
-object LocalId {
-    private val prefix = System.currentTimeMillis().and(CURRENT_TIME_MASK).toBase62() +
-            Random(RANDOM_SEED).nextInt(MAX_RANDOM_PREFIX_VALUE).toBase62()
-    private val counter = AtomicLong(INITIAL_COUNTER_VALUE)
+    override fun toString(): String {
+        return mostSigBits.toCompactString() + "-" + leastSigBits.toCompactString()
+    }
 
-    fun newId(): String {
-        return prefix + counter.getAndIncrement()
+    fun toUUID(): UUID {
+        return UUID(mostSigBits, leastSigBits)
+    }
+
+    companion object {
+        private val counter = AtomicLong(INITIAL_COUNTER_VALUE)
+        private val mostSigBits = generateMSB()
+        private val prefix = mostSigBits.toCompactString() + "-"
+
+        private fun generateMSB(): Long {
+            val random24Bits = SecureRandom().nextLong() and 0xFFFFFFL
+            val currentTimeMillis = System.currentTimeMillis() and 0xFFFFFFFFFFL
+            return (currentTimeMillis shl 24) or random24Bits
+        }
+
+        fun newId() = LocalId(
+            mostSigBits = mostSigBits,
+            leastSigBits = counter.getAndIncrement(),
+        )
+
+        fun newIdString(): String {
+            return prefix + counter.getAndIncrement().toCompactString()
+        }
     }
 }

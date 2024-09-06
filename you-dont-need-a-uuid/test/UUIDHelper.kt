@@ -8,18 +8,22 @@ import java.util.concurrent.atomic.AtomicLong
 object UUIDHelper {
     private val atomicLong = AtomicLong(2000)
 
-    fun localId() = LocalId.newId()
+    fun localIdString() = LocalId.newIdString()
 
     // More efficient for primitives than toString() due to StringBuilder usage
-    fun atomicLong() = "" + atomicLong.getAndIncrement()
+    fun atomicLongString() = "" + atomicLong.getAndIncrement()
+    fun uuid4String() = UUID.randomUUID().toString()
+    fun uuid6String() = UuidCreator.getTimeOrdered().toString()
+    fun uuid7String() = UuidCreator.getTimeOrderedEpoch().toString()
+    fun guid4String() = GUID.v4().toString()
+    fun guid7String() = GUID.v7().toString()
 
-    fun uuid4() = UUID.randomUUID().toString()
 
-    fun uuid6() = UuidCreator.getTimeOrdered().toString()
-
-    fun uuid7() = UuidCreator.getTimeOrderedEpoch().toString()
-
-    fun guid4() = GUID.v4().toString()
-
-    fun guid7() = GUID.v7().toString()
+    fun localId(): Any = LocalId.newId()
+    fun atomicLong() = atomicLong.getAndIncrement()
+    fun uuid4(): Any = UUID.randomUUID()
+    fun uuid6(): Any = UuidCreator.getTimeOrdered()
+    fun uuid7(): Any = UuidCreator.getTimeOrderedEpoch()
+    fun guid4(): Any = GUID.v4()
+    fun guid7(): Any = GUID.v7()
 }

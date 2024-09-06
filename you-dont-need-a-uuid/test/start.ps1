@@ -1,5 +1,5 @@
 # Set the number of iterations in this constant
-$iterations = 4
+$iterations = 5
 
 # Directory for saving results
 $outputDir = "benchmarks"

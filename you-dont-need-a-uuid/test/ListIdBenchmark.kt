@@ -1,19 +1,3 @@
-/*
- * Copyright 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.benchmark
 
 import androidx.benchmark.junit4.BenchmarkRule
@@ -33,66 +17,59 @@ class ListIdBenchmark {
     val benchmarkRule = BenchmarkRule()
 
     @Test
-    fun localId_10() {
-        testInList(10) { UUIDHelper.localId() }
-    }
+    fun localId_10() = testInList(10) { UUIDHelper.localId() }
+    @Test
+    fun localId_100() = testInList(100) { UUIDHelper.localId() }
+    @Test
+    fun localId_1000() = testInList(1_000) { UUIDHelper.localId() }
+    @Test
+    fun localId_10000() = testInList(10_000) { UUIDHelper.localId() }
+    @Test
+    fun localId_100000() = testInList(100_000) { UUIDHelper.localId() }
+    @Test
+    fun localId_1000000() = testInList(1_000_000) { UUIDHelper.localId() }
+    @Test
+    fun uuid4_10() = testInList(10) { UUIDHelper.uuid4() }
+    @Test
+    fun uuid4_100() = testInList(100) { UUIDHelper.uuid4() }
+    @Test
+    fun uuid4_1000() = testInList(1_000) { UUIDHelper.uuid4() }
+    @Test
+    fun uuid4_10000() = testInList(10_000) { UUIDHelper.uuid4() }
+    @Test
+    fun uuid4_100000() = testInList(100_000) { UUIDHelper.uuid4() }
+    @Test
+    fun uuid4_1000000() = testInList(1_000_000) { UUIDHelper.uuid4() }
+
 
     @Test
-    fun localId_100() {
-        testInList(100) { UUIDHelper.localId() }
-    }
-
+    fun localIdString_10() = testInList(10) { UUIDHelper.localIdString() }
     @Test
-    fun localId_1000() {
-        testInList(1_000) { UUIDHelper.localId() }
-    }
-
+    fun localIdString_100() = testInList(100) { UUIDHelper.localIdString() }
     @Test
-    fun localId_10000() {
-        testInList(10_000) { UUIDHelper.localId() }
-    }
-
+    fun localIdString_1000() = testInList(1_000) { UUIDHelper.localIdString() }
     @Test
-    fun localId_100000() {
-        testInList(100_000) { UUIDHelper.localId() }
-    }
-
+    fun localIdString_10000() = testInList(10_000) { UUIDHelper.localIdString() }
     @Test
-    fun localId_1000000() {
-        testInList(1_000_000) { UUIDHelper.localId() }
-    }
-
+    fun localIdString_100000() = testInList(100_000) { UUIDHelper.localIdString() }
     @Test
-    fun uuid4_10() {
-        testInList(10) { UUIDHelper.uuid4() }
-    }
-
+    fun localIdString_1000000() = testInList(1_000_000) { UUIDHelper.localIdString() }
     @Test
-    fun uuid4_100() {
-        testInList(100) { UUIDHelper.uuid4() }
-    }
-
+    fun uuid4String_10() = testInList(10) { UUIDHelper.uuid4String() }
     @Test
-    fun uuid4_1000() {
-        testInList(1_000) { UUIDHelper.uuid4() }
-    }
-
+    fun uuid4String_100() = testInList(100) { UUIDHelper.uuid4String() }
     @Test
-    fun uuid4_10000() {
-        testInList(10_000) { UUIDHelper.uuid4() }
-    }
-
+    fun uuid4String_1000() = testInList(1_000) { UUIDHelper.uuid4String() }
     @Test
-    fun uuid4_100000() {
-        testInList(100_000) { UUIDHelper.uuid4() }
-    }
-
+    fun uuid4String_10000() = testInList(10_000) { UUIDHelper.uuid4String() }
     @Test
-    fun uuid4_1000000() {
-        testInList(1_000_000) { UUIDHelper.uuid4() }
-    }
+    fun uuid4String_100000() = testInList(100_000) { UUIDHelper.uuid4String() }
+    @Test
+    fun uuid4String_1000000() = testInList(1_000_000) { UUIDHelper.uuid4String() }
 
-    private inline fun testInList(size: Int, crossinline idBuilder: () -> String) {
+
+
+    private inline fun testInList(size: Int, crossinline idBuilder: () -> Any) {
         benchmarkRule.measureRepeated {
             List(size) {
                 SomeEntity(
@@ -106,7 +83,7 @@ class ListIdBenchmark {
     }
 
     private class SomeEntity(
-        val id: String,
+        val id: Any,
         val name: String,
         val role: String,
         val price: Double,
