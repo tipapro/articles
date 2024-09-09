@@ -22,9 +22,8 @@ fun Long.toCompactString(): String {
 }
 
 // Initial counter value for ID generation.
-// This is the starting point for the sequential counter used in generating unique IDs,
-// allowing for a predefined starting number. The starting point is 2000L to avoid
-// using small integers that could potentially fall within the Integer cache pool in Java.
+// The starting point is 2000L to avoid using small integers
+// that could potentially fall within the Integer cache pool in Java.
 private const val INITIAL_COUNTER_VALUE = 2000L
 
 class LocalId(
